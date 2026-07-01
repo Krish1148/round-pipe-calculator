@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Round Pipe Weight Calculator</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f4f6f9; color: #333; padding: 40px 20px; display: flex; justify-content: center; }
+        .calculator-card { background: #ffffff; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); width: 100%; max-width: 450px; padding: 30px; }
+        h2 { margin-top: 0; color: #1a202c; border-bottom: 2px solid #edf2f7; padding-bottom: 15px; text-align: center; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; font-weight: 600; margin-bottom: 8px; color: #4a5568; }
+        select, input { width: 100%; padding: 10px; border: 1px solid #cbd5e0; border-radius: 6px; box-sizing: border-box; font-size: 16px; }
+        select:focus, input:focus { outline: none; border-color: #3182ce; box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.5); }
+        .row { display: flex; gap: 15px; }
+        .row .form-group { flex: 1; }
+        .results-box { background-color: #ebf8ff; border-left: 4px solid #3182ce; padding: 20px; border-radius: 0 8px 8px 0; margin-top: 25px; }
+        .result-item { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 16px; }
+        .result-item:last-child { margin-bottom: 0; }
+        .result-value { font-weight: bold; color: #2b6cb0; }
+    </style>
+</head>
+<body>
+
+<div class="calculator-card">
+    <h2>Round Pipe Weight Calculator</h2>
+    
+    <div class="form-group">
+        <label for="unit">Input Unit</label>
+        <select id="unit" onchange="updateLabels(); calculate();">
+            <option value="mm">Millimeters (mm)</option>
+            <option value="inch">Inches (in)</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label for="od">Outer Diameter (<span class="unit-text">mm</span>)</label>
+        <input type="number" id="od" value="48.3" step="any" oninput="calculate()">
+    </div>
+
+    <div class="row">
+        <div class="form-group">
+            <label for="thickness">Wall Thickness (<span class="unit-text">mm</span>)</label>
+            <input type="number" id="thickness" value="3.2" step="any" oninput="calculate()">
+        </div>
+        <div class="form-group">
+            <label for="length">Length (meters)</label>
+            <input type="number" id="length" value="6" step="any" oninput="calculate()">
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="quantity">Quantity</label>
+        <input type="number" id="quantity" value="1" step="1" oninput="calculate()">
+    </div>
+
+    <div class="results-box">
+        <div class="result-item">
+            <span>Weight per piece:</span>
+            <span class="result-value" id="res-unit-weight">0.00 kg</span>
+        </div>
+        <hr style="border: 0; border-top: 1px solid #cbd5e0; margin: 10px 0;">
+        <div class="result-item" style="font-size: 18px; font-weight: bold;">
+            <span>Total Weight:</span>
+            <span class="result-value" id="res-total-weight">0.00 kg</span>
+        </div>
+    </div>
+</div>
+
+<script>
+    const STEEL_DENSITY = 7.85;
+
+    function updateLabels() {
+        const unit = document.getElementById('unit').value;
+        document.querySelectorAll('.unit-text').forEach(el => el.textContent = unit);
+    }
+
+    function calculate() {
+        const unit = document.getElementById('unit').value;
+        const od_raw = parseFloat(document.getElementById('od').value) || 0;
+        const t_raw = parseFloat(document.getElementById('thickness').value) || 0;
+        const len_meters = parseFloat(document.getElementById('length').value) || 0;
+        const qty = parseInt(document.getElementById('quantity').value) || 0;
+
+        const toCm = (unit === 'mm') ? 0.1 : 2.54;
+        const OD = od_raw * toCm;
+        const t = t_raw * toCm;
+        const L = len_meters * 100;
+
+        let volume = 0;
+        const R = OD / 2;
+        const r = R - t;
+        
+        if(t < R) {
+            volume = Math.PI * (Math.pow(R, 2) - Math.pow(r, 2)) * L;
+        }
+
+        const unitWeight = (volume * STEEL_DENSITY) / 1000;
+        const totalWeight = unitWeight * qty;
+
+        document.getElementById('res-unit-weight').textContent = unitWeight.toFixed(2) + ' kg';
+        document.getElementById('res-total-weight').textContent = totalWeight.toFixed(2) + ' kg';
+    }
+
+    window.onload = calculate;
+</script>
+</body>
+</html>
